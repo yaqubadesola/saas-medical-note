@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+openai
+dotenv
+fastapi-clerk-auth
+pydantic
