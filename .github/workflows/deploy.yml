@@ -1,3 +1,6 @@
+#Trigger: Runs automatically when someone pushes to the `main` branch. 
+#This is the branch that contains the code for the application.
+
 name: Deploy to AWS App Runner
 
 on:
@@ -10,9 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Clone this repo so the workflow can read the Dockerfile and source.
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Export AWS credentials into the job environment for CLI and Docker.
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -20,22 +25,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
 
+      # Step 3: Log Docker into ECR in that region (required before docker push).
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker Image
+      # Step 4: Build the image (App Runner expects linux/amd64).
+      - name: Build Docker Image      
         run: |
           docker build \
-          --platform linux/amd64 \
-          -t consultation-app .
+            --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
+            -t consultation-app .
 
+      # Step 5: Apply the ECR URL + repository name + tag Docker expects.
       - name: Tag Docker Image
         run: |
           docker tag consultation-app:latest \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/consultation-app:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/consultation-app:latest
 
+      # Step 6: Upload the tagged image to ECR.
       - name: Push Docker Image
         run: |
           docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/consultation-app:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/consultation-app:latest
