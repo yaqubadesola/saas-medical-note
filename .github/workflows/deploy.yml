@@ -49,3 +49,9 @@ jobs:
         run: |
           docker push \
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/consultation-app:latest
+      
+      # Step 6: Trigger App Runner Deployment.
+      - name: Trigger App Runner Deployment
+        run: |
+          aws apprunner start-deployment \
+          --service-arn ${{ secrets.APP_RUNNER_SERVICE_ARN }}
