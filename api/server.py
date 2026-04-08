@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException 
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,6 +87,11 @@ def consultation_summary(
     creds: HTTPAuthorizationCredentials = Depends(clerk_guard),
 ):
     user_id = creds.decoded["sub"]
+    subscription = creds.decoded.get("subscription")
+
+    if subscription != "premium_subscription":
+        raise HTTPException(status_code=403, detail="Subscription required")
+        
     key = (os.getenv("OPENROUTER_API_KEY") or "").strip()
     if not key:
         raise RuntimeError(
