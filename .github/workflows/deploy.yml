@@ -31,11 +31,11 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       # Step 4: Build the image (App Runner expects linux/amd64).
-      - name: Build Docker Image
+      - name: Build Docker Image      
         run: |
           docker build \
             --platform linux/amd64 \
-            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
             -t consultation-app .
 
       # Step 5: Apply the ECR URL + repository name + tag Docker expects.
