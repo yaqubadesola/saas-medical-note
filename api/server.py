@@ -87,7 +87,7 @@ def consultation_summary(
     creds: HTTPAuthorizationCredentials = Depends(clerk_guard),
 ):
     user_id = creds.decoded["sub"]
-    subscription = creds.decoded.get("subscription")
+    subscription = creds.decoded.get("public_metadata", {}).get("subscription")
 
     if subscription != "premium_subscription":
         raise HTTPException(status_code=403, detail="Subscription required")
@@ -95,7 +95,7 @@ def consultation_summary(
     key = (os.getenv("OPENROUTER_API_KEY") or "").strip()
     if not key:
         raise RuntimeError(
-            "OPEN_ROUTER_API_KEY is not set. Add it to a .env file in the project root."
+            "OPENROUTER_API_KEY is not set. Add it to a .env file in the project root."
         )
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
