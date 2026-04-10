@@ -95,7 +95,7 @@ def consultation_summary(
     key = (os.getenv("OPENROUTER_API_KEY") or "").strip()
     if not key:
         raise RuntimeError(
-            "OPENROUTER_API_KEY is not set. Add it to a .env file in the project root."
+            "OPEN_ROUTER_API_KEY is not set. Add it to a .env file in the project root."
         )
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
