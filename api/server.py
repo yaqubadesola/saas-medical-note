@@ -119,7 +119,7 @@ def consultation_summary(
     ]
     
     stream = client.chat.completions.create(
-        model="gpt-5-nano",
+        model="openai/gpt-5.4",
         messages=prompt,
         stream=True,
     )
