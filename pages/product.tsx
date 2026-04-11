@@ -96,18 +96,33 @@ function ConsultationForm() {
                     setOutput(buffer);
                 },
                 onclose() {
+                    if (!buffer) {
+                        setOutput("No response received. Please check your subscription.");
+                    }
                     setLoading(false);
                 },
+                // onerror(err) {
+                //     if (err instanceof SseFatalError) {
+                //         setOutput((prev) => prev || err.message);
+                //         setLoading(false);
+                //         controller.abort();
+                //         throw err;
+                //     }
+                //     console.error('SSE error:', err);
+                //     controller.abort();
+                //     setLoading(false);
+                // },
                 onerror(err) {
-                    if (err instanceof SseFatalError) {
-                        setOutput((prev) => prev || err.message);
-                        setLoading(false);
-                        controller.abort();
-                        throw err;
-                    }
-                    console.error('SSE error:', err);
-                    controller.abort();
+                    console.error("SSE Error:", err);
+                
+                    setOutput(
+                        err instanceof Error
+                            ? err.message
+                            : "Something went wrong. Please check your subscription."
+                    );
+                
                     setLoading(false);
+                    controller.abort();
                 },
             });
         } catch (e) {
