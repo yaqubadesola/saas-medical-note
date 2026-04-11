@@ -96,12 +96,13 @@ def consultation_summary(
     visit: Visit,
     creds: HTTPAuthorizationCredentials = Depends(get_clerk_guard()),
 ):
-    print("JWT ISSUER:", creds.decoded.get("iss"))
-    user_id = creds.decoded["sub"]
-    subscription = creds.decoded.get("public_metadata", {}).get("subscription")
+    print("JWT:", creds.decoded)
+    # print("JWT ISSUER:", creds.decoded.get("iss"))
+    # user_id = creds.decoded["sub"]
+    # subscription = creds.decoded.get("public_metadata", {}).get("subscription")
 
-    if subscription != "premium_subscription":
-        raise HTTPException(status_code=403, detail="Subscription required")
+    # if subscription != "premium_subscription":
+    #     raise HTTPException(status_code=403, detail="Subscription required")
         
     key = (os.getenv("OPENROUTER_API_KEY") or "").strip()
     if not key:
