@@ -61,14 +61,22 @@ function ConsultationForm() {
                     notes,
                 }),
                 async onopen(response) {
-                    if (response.ok) {
-                        const ct = response.headers.get('content-type') || '';
-                        if (!ct.startsWith(EventStreamContentType)) {
-                            throw new SseFatalError(
-                                `Expected ${EventStreamContentType}, got ${ct || '(none)'}`,
-                            );
+                    if (
+                        response.status >= 400 &&
+                        response.status < 500 &&
+                        response.status !== 429
+                    ) {
+                        if (response.status === 403) {
+                            const data = await response.json().catch(() => null);
+                    
+                            const message =
+                                data?.detail?.message ||
+                                "You need an active subscription to generate medical notes.";
+                    
+                            throw new SseFatalError(message);
                         }
-                        return;
+                    
+                        throw new SseFatalError(`HTTP ${response.status}`);
                     }
                     if (
                         response.status >= 400 &&
@@ -172,7 +180,7 @@ function ConsultationForm() {
             </form>
 
             {output && (
-                <section className="mt-8 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                 <section className="mt-8 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-lg p-6">
                     <div className="markdown-content prose prose-blue dark:prose-invert max-w-none">
                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                             {output}
