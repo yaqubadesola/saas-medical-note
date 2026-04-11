@@ -61,35 +61,27 @@ function ConsultationForm() {
                     notes,
                 }),
                 async onopen(response) {
-                    if (
-                        response.status >= 400 &&
-                        response.status < 500 &&
-                        response.status !== 429
-                    ) {
-                        if (response.status === 403) {
-                            const data = await response.json().catch(() => null);
-                    
-                            const message =
-                                data?.detail?.message ||
-                                "You need an active subscription to generate medical notes.";
-                    
-                            throw new SseFatalError(message);
-                        }
-                    
+                    if (response.ok && response.headers.get('content-type')?.includes(EventStreamContentType)) {
+                        return;
+                    }
+                
+                    if (response.status === 403) {
+                        const data = await response.json().catch(() => null);
+                
+                        const message =
+                            data?.detail?.message ||
+                            "You need an active subscription to generate medical notes.";
+                
+                        throw new SseFatalError(message);
+                    }
+                
+                    if (response.status >= 400 && response.status < 500) {
                         throw new SseFatalError(`HTTP ${response.status}`);
                     }
-                    if (
-                        response.status >= 400 &&
-                        response.status < 500 &&
-                        response.status !== 429
-                    ) {
-                        const hint =
-                            response.status === 403
-                                ? 'Clerk JWT rejected (check CLERK_JWKS_URL / CLERK_SECRET_KEY in the container match your Clerk app).'
-                                : `HTTP ${response.status}`;
-                        throw new SseFatalError(hint);
+                
+                    if (response.status >= 500) {
+                        throw new Error("Server error");
                     }
-                    throw new SseFatalError(`HTTP ${response.status}`);
                 },
                 onmessage(ev) {
                     buffer += ev.data;
