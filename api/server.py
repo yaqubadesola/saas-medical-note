@@ -81,6 +81,13 @@ Date of Visit: {visit.date_of_visit}
 Notes:
 {visit.notes}"""
 
+@app.get("/debug-env")
+def debug_env():
+    return {
+        "CLERK_JWKS_URL": os.getenv("CLERK_JWKS_URL"),
+        "CLERK_SECRET_KEY": "exists" if os.getenv("CLERK_SECRET_KEY") else "missing",
+    }
+    
 @app.post("/api/consultation")
 def consultation_summary(
     visit: Visit,
