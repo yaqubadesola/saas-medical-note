@@ -96,6 +96,7 @@ def consultation_summary(
     visit: Visit,
     creds: HTTPAuthorizationCredentials = Depends(get_clerk_guard()),
 ):
+    print("JWT ISSUER:", creds.decoded.get("iss"))
     user_id = creds.decoded["sub"]
     subscription = creds.decoded.get("public_metadata", {}).get("subscription")
 
