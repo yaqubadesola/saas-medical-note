@@ -187,11 +187,21 @@ function ConsultationForm() {
             </form>
 
             {output && (
-                 <section className="mt-8 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-lg p-6">
-                    <div className="markdown-content prose prose-blue dark:prose-invert max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                            {output}
-                        </ReactMarkdown>
+                <section
+                    className="mt-10 rounded-2xl border border-slate-200/90 bg-white shadow-md ring-1 ring-slate-900/5 dark:border-gray-600 dark:bg-gray-800/90 dark:ring-white/10 overflow-hidden"
+                    aria-label="Generated clinical summary"
+                >
+                    <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-teal-50/40 px-6 py-3.5 dark:border-gray-700 dark:from-gray-800 dark:to-teal-950/30">
+                        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Clinical summary
+                        </h2>
+                    </div>
+                    <div className="px-6 py-6 sm:px-8">
+                        <div className="markdown-content prose prose-slate max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-slate-800 dark:prose-headings:text-slate-100 prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-li:text-slate-700 dark:prose-li:text-slate-300 prose-strong:text-slate-900 dark:prose-strong:text-slate-100">
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                                {output}
+                            </ReactMarkdown>
+                        </div>
                     </div>
                 </section>
             )}

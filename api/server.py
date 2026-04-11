@@ -97,14 +97,16 @@ def consultation_summary(
     creds: HTTPAuthorizationCredentials = Depends(get_clerk_guard()),
 ):
     #check if the user has a premium subscription with plan premium_subscription
-    plan = creds.decoded.get("pla")
+    plan = creds.decoded.get("pla", "")
+    print("USER PLAN:", plan)
+    allowed_plans = ["premium_subscription", "u:premium_subscription"]
 
-    if plan != "u:premium_subscription":
+    if plan not in allowed_plans:
         raise HTTPException(
             status_code=403,
             detail={
                 "error": "subscription_required",
-                "message": "Your subscription is inactive or missing.",
+                "message": "You need an active premium subscription to generate medical notes.",
                 "required_plan": "premium_subscription",
                 "current_plan": plan
             }
