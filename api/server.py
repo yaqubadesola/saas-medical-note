@@ -56,9 +56,12 @@ def _clerk_config_from_env() -> tuple[ClerkConfig, bool]:
         leeway=leeway,
     ), debug
 
+#use this function to get the clerk guard
+def get_clerk_guard():
+    cfg, debug = _clerk_config_from_env()
+    return ClerkHTTPBearer(cfg, debug_mode=debug)
 
-_clerk_cfg, _clerk_debug = _clerk_config_from_env()
-clerk_guard = ClerkHTTPBearer(_clerk_cfg, debug_mode=_clerk_debug)
+
 
 class Visit(BaseModel):
     patient_name: str
@@ -87,11 +90,11 @@ def debug_env():
         "CLERK_JWKS_URL": os.getenv("CLERK_JWKS_URL"),
         "CLERK_SECRET_KEY": "exists" if os.getenv("CLERK_SECRET_KEY") else "missing",
     }
-    
+
 @app.post("/api/consultation")
 def consultation_summary(
     visit: Visit,
-    creds: HTTPAuthorizationCredentials = Depends(clerk_guard),
+    creds: HTTPAuthorizationCredentials = Depends(get_clerk_guard()),
 ):
     user_id = creds.decoded["sub"]
     subscription = creds.decoded.get("public_metadata", {}).get("subscription")
