@@ -1,12 +1,13 @@
-#Trigger: Runs automatically when someone pushes to the `main` branch. 
-#This is the branch that contains the code for the application.
+#Trigger: Manual only. Auto-deploy disabled to avoid unintended AWS charges.
+#To re-enable auto-deploy, restore the `push` trigger below.
 
 name: Deploy to AWS App Runner
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   deploy:
