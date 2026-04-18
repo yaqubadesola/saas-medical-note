@@ -1,0 +1,81 @@
+name: Teardown AWS Services
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm deletion of all AWS services'
+        required: true
+
+jobs:
+  teardown:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'destroy'
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Delete App Runner Service
+        run: |
+          echo "Deleting App Runner service..."
+          aws apprunner delete-service \
+            --service-arn ${{ secrets.APP_RUNNER_SERVICE_ARN }} \
+            --region eu-west-1
+          echo "App Runner service deletion initiated."
+
+      - name: Wait for App Runner deletion
+        run: |
+          echo "Waiting for App Runner service to be deleted..."
+          for i in $(seq 1 20); do
+            STATUS=$(aws apprunner describe-service \
+              --service-arn ${{ secrets.APP_RUNNER_SERVICE_ARN }} \
+              --region eu-west-1 \
+              --query 'Service.Status' \
+              --output text 2>/dev/null || echo "DELETED")
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "DELETED" ] || [ "$STATUS" = "None" ]; then
+              echo "App Runner service deleted."
+              break
+            fi
+            sleep 15
+          done
+
+      - name: Delete ECR images
+        run: |
+          echo "Deleting all images from ECR repository..."
+          IMAGE_IDS=$(aws ecr list-images \
+            --repository-name consultation-app \
+            --region eu-west-1 \
+            --query 'imageIds[*]' \
+            --output json)
+          if [ "$IMAGE_IDS" != "[]" ]; then
+            aws ecr batch-delete-image \
+              --repository-name consultation-app \
+              --image-ids "$IMAGE_IDS" \
+              --region eu-west-1
+            echo "ECR images deleted."
+          else
+            echo "No images found in ECR repository."
+          fi
+
+      - name: Delete ECR repository
+        run: |
+          echo "Deleting ECR repository..."
+          aws ecr delete-repository \
+            --repository-name consultation-app \
+            --force \
+            --region eu-west-1
+          echo "ECR repository deleted."
+
+      - name: Summary
+        run: |
+          echo "=========================================="
+          echo "Teardown complete. Deleted:"
+          echo "  - App Runner service"
+          echo "  - ECR repository: consultation-app"
+          echo "=========================================="
